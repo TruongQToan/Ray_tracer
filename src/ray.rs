@@ -1,7 +1,7 @@
 use crate::vector;
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Ray {
     origin: vector::Point3, 
     dir: vector::Vec3,

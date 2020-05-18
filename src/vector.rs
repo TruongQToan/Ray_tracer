@@ -59,14 +59,14 @@ impl std::ops::Mul<&Vec3> for f64 {
     fn mul(self, t: &Vec3) -> Vec3 { Vec3::new(self*t.x, self*t.y, self*t.z) }
 }
 
-// impl std::ops::Div<f64> for &Vec3 {
-//     type Output = Vec3;
-//    
-//     fn div(self, t: f64) -> Vec3 {
-//         Vec3::new(self.x/t, self.y/t, self.z/t)
-//     }
-// }
-//
+impl std::ops::Div<f64> for &Vec3 {
+    type Output = Vec3;
+
+    fn div(self, t: f64) -> Vec3 {
+        Vec3::new(self.x/t, self.y/t, self.z/t)
+    }
+}
+
 
 // impl std::ops::Mul<&Vec3> for f64 {
 //     type Output = Vec3;
