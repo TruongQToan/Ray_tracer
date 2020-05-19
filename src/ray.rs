@@ -25,6 +25,6 @@ impl Ray {
 
     #[allow(dead_code)]
     pub fn at(&self, t: f64) -> vector::Point3 {
-        &self.origin+&(t*&self.dir)
+        self.origin+t*self.dir
     }
 }
