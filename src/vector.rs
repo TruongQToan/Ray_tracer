@@ -1,5 +1,7 @@
+use crate::utilities::clamp;
+
 #[allow(dead_code)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct Vec3 {
     x: f64,
     y: f64,
@@ -32,7 +34,7 @@ impl Vec3 {
     }
 
     #[allow(dead_code)]
-    fn l2_squared(&self) -> f64 {
+    pub fn l2_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 }
@@ -88,9 +90,19 @@ pub type Color = Vec3;
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let ir: u8 = ((255.999 * self.x).floor()) as u8;
-        let ig: u8 = ((255.999 * self.y).floor()) as u8;
-        let ib: u8 = ((255.999 * self.z).floor()) as u8;
+        let samples_per_pixel: i32 = 100;
+        let mut r: f64 = self.x;
+        let mut g: f64 = self.y;
+        let mut b: f64 = self.z;
+        
+        let scale: f64 = 1.0 / (samples_per_pixel as f64);
+        r *= scale;
+        g *= scale;
+        b *= scale;
+        
+        let ir: u8 = ((256.0 * clamp(r, 0.0, 0.999)).floor()) as u8;
+        let ig: u8 = ((256.0 * clamp(g, 0.0, 0.999)).floor()) as u8;
+        let ib: u8 = ((256.0 * clamp(b, 0.0, 0.999)).floor()) as u8;
         write!(f, "{} {} {}\n", ir, ig, ib)
     }
 }
