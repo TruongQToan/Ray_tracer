@@ -1,4 +1,5 @@
 use crate::utilities::clamp;
+use rand::prelude::*;
 
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, Default)]
@@ -61,6 +62,12 @@ impl std::ops::Mul<Vec3> for f64 {
     fn mul(self, t: Vec3) -> Vec3 { Vec3::new(self * t.x, self * t.y, self * t.z) }
 }
 
+impl std::ops::Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, t: Vec3) -> Vec3 { Vec3::new(self.x * t.x, self.y * t.y, self.z * t.z) }
+}
+
 impl std::ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
@@ -86,6 +93,44 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
     Vec3::new(v.x / l, v.y / l, v.z / l)
 }
 
+#[allow(dead_code)]
+pub fn random() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    return Vec3::new(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>());
+}
+
+#[allow(dead_code)]
+pub fn random_in_range(min: f64, max: f64) -> Vec3 {
+    let mut rng = rand::thread_rng();
+    return Vec3::new(rng.gen_range(min, max), rng.gen_range(min, max), rng.gen_range(min, max));
+}
+
+#[allow(dead_code)]
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p: Vec3 = random_in_range(-1.0, 1.0);
+        if p.l2_squared() >= 1.0 {
+            continue
+        }
+        
+        return p
+    }
+}
+
+#[allow(dead_code)]
+pub fn random_unit_vector() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    let a: f64 = rng.gen_range(0.0, 2.0*std::f64::consts::PI);
+    let z: f64 = rng.gen_range(-1.0, 1.0);
+    let r: f64 = (1.0 - z * z).sqrt();
+    return Vec3::new(r*a.cos(), r*a.sin(), z)
+}
+
+#[allow(dead_code)]
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    return (*v)-2.0*dot(v, n)*(*n)
+}
+
 pub type Color = Vec3;
 
 impl std::fmt::Display for Color {
@@ -94,12 +139,12 @@ impl std::fmt::Display for Color {
         let mut r: f64 = self.x;
         let mut g: f64 = self.y;
         let mut b: f64 = self.z;
-        
+
         let scale: f64 = 1.0 / (samples_per_pixel as f64);
-        r *= scale;
-        g *= scale;
-        b *= scale;
-        
+        r = (r * scale).sqrt();
+        g = (g * scale).sqrt();
+        b = (b * scale).sqrt();
+
         let ir: u8 = ((256.0 * clamp(r, 0.0, 0.999)).floor()) as u8;
         let ig: u8 = ((256.0 * clamp(g, 0.0, 0.999)).floor()) as u8;
         let ib: u8 = ((256.0 * clamp(b, 0.0, 0.999)).floor()) as u8;

@@ -1,17 +1,18 @@
-use crate::{vector, ray};
+use crate::{vector, ray, material};
 
 #[allow(dead_code)]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: vector::Vec3,
     pub normal: vector::Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub mat: Box<dyn material::Material>,
 }
 
 impl HitRecord {
     pub fn new() -> Self {
-        return Default :: default();
+        return Self {p: Default::default(), normal: Default::default(), t: 0.0, front_face: false, mat: Box::new(material::Lambertian::new(vector::Color::new(0.0, 0.0, 0.0)))}
     }
     
     pub fn set_face_normal(&mut self, r: &ray::Ray, outward_normal: vector::Vec3) {
@@ -25,19 +26,26 @@ impl HitRecord {
 }
 
 pub trait Hittable {
+    fn box_clone(&self) -> Box<dyn Hittable>;
     fn hit(&self, r: &ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
+#[derive(Clone)]
 pub struct Sphere {
     pub center: vector::Point3,    
     pub radius: f64,
+    pub mat: Box<dyn material::Material>,
 }
 
 impl Sphere {
-    pub fn new(center: vector::Point3, radius: f64) -> Self { Self { center, radius }}    
+    pub fn new(center: vector::Point3, radius: f64, mat: Box<dyn material::Material>) -> Self { Self { center, radius, mat }}    
 }
 
 impl Hittable for Sphere {
+    fn box_clone(&self) -> Box<dyn Hittable> {
+        Box::new(Sphere { center: self.center, radius: self.radius, mat: self.mat.clone() })
+    }
+    
     fn hit(&self, r: &ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: vector::Vec3 = r.origin() - self.center;
         let a: f64 = r.dir().l2_squared();
@@ -54,6 +62,7 @@ impl Hittable for Sphere {
                 rec.p = r.at(temp);
                 let outward_normal: vector::Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
+                rec.mat = self.mat.clone();
                 return Some(rec)
             }
 
@@ -64,19 +73,27 @@ impl Hittable for Sphere {
                 rec.p = r.at(temp);
                 let outward_normal: vector::Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
+                rec.mat = self.mat.clone();
                 return Some(rec)
             }
         }
         
-        return None;
+        return None
     }
 }
 
-pub struct HittableList<T: Hittable> {
-    pub objects: std::vec::Vec<T>,
+impl Clone for Box<dyn Hittable> {
+    fn clone(&self) -> Box<dyn Hittable> {
+        self.box_clone()
+    }
 }
 
-impl<T: Hittable> HittableList<T> {
+#[derive(Clone)]
+pub struct HittableList {
+    pub objects: std::vec::Vec<Box<dyn Hittable>>,
+}
+
+impl HittableList {
     pub fn new() -> Self {
         Self { objects: std::vec::Vec::new() }
     }
@@ -86,13 +103,17 @@ impl<T: Hittable> HittableList<T> {
         self.objects.clear();
     }
     
-    pub fn add(&mut self, object: T) {
+    pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object)
     }
     
 }
 
-impl<T: Hittable> Hittable for HittableList<T> {
+impl Hittable for HittableList {
+    fn box_clone(&self) -> Box<dyn Hittable> {
+        Box::new(HittableList { objects: self.objects.clone() })
+    }
+    
     fn hit(&self, r: &ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut closest_so_far: f64 = t_max;
         let mut temp_rec: Option<HitRecord> = None;
