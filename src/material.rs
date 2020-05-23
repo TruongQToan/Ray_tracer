@@ -1,7 +1,7 @@
 use crate::ray;
 use crate::hittable;
 use crate::vector;
-use rand::prelude::*;
+use crate::utilities;
 
 pub trait Material {
     fn box_clone(&self) -> Box<dyn Material>;
@@ -109,8 +109,7 @@ impl Material for Dielectric {
         }
 
         let reflect_prob: f64 = schlick(cos_theta, self.ref_idx);
-        let mut rng = rand::thread_rng();
-        if rng.gen::<f64>() < reflect_prob {
+        if (utilities::random_double()) < reflect_prob {
             let reflected = vector::reflect(&unit_direction, &rec.normal);
             let scattered = ray::Ray::new(rec.p, reflected);
             return Some((attenuation, scattered));

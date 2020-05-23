@@ -1,5 +1,4 @@
-use crate::utilities::clamp;
-use rand::prelude::*;
+use crate::utilities;
 
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, Default)]
@@ -95,14 +94,18 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
 
 #[allow(dead_code)]
 pub fn random() -> Vec3 {
-    let mut rng = rand::thread_rng();
-    return Vec3::new(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>());
+    let randx = utilities::random_double();
+    let randy = utilities::random_double();
+    let randz = utilities::random_double();
+    return Vec3::new(randx, randy, randz);
 }
 
 #[allow(dead_code)]
 pub fn random_in_range(min: f64, max: f64) -> Vec3 {
-    let mut rng = rand::thread_rng();
-    return Vec3::new(rng.gen_range(min, max), rng.gen_range(min, max), rng.gen_range(min, max));
+    let randx = utilities::random_in_range(min, max);
+    let randy = utilities::random_in_range(min, max);
+    let randz = utilities::random_in_range(min, max);
+    return Vec3::new(randx, randy, randz);
 }
 
 #[allow(dead_code)]
@@ -110,46 +113,46 @@ pub fn random_in_unit_sphere() -> Vec3 {
     loop {
         let p: Vec3 = random_in_range(-1.0, 1.0);
         if p.l2_squared() >= 1.0 {
-            continue
+            continue;
         }
-        
-        return p
+
+        return p;
     }
 }
 
 #[allow(dead_code)]
 pub fn random_in_unit_disk() -> Point3 {
     loop {
-        let mut rng = rand::thread_rng();
-        let p: Point3 = Point3::new(rng.gen_range(-1.0, 1.0), rng.gen_range(-1.0, 1.0), 0.0);
+        let rand_x = utilities::random_in_range(-1.0, 1.0);
+        let rand_y = utilities::random_in_range(-1.0, 1.0);
+        let p: Point3 = Point3::new(rand_x, rand_y, 0.0);
         if p.l2_squared() >= 1.0 {
-            continue
+            continue;
         }
-        
-        return p
-    }    
+
+        return p;
+    }
 }
 
 #[allow(dead_code)]
 pub fn random_unit_vector() -> Vec3 {
-    let mut rng = rand::thread_rng();
-    let a: f64 = rng.gen_range(0.0, 2.0*std::f64::consts::PI);
-    let z: f64 = rng.gen_range(-1.0, 1.0);
+    let a: f64 = utilities::random_in_range(0.0, 2.0 * std::f64::consts::PI);
+    let z: f64 = utilities::random_in_range(-1.0, 1.0);
     let r: f64 = (1.0 - z * z).sqrt();
-    return Vec3::new(r*a.cos(), r*a.sin(), z)
+    return Vec3::new(r * a.cos(), r * a.sin(), z);
 }
 
 #[allow(dead_code)]
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-    return (*v)-2.0*dot(v, n)*(*n)
+    return (*v) - 2.0 * dot(v, n) * (*n);
 }
 
 #[allow(dead_code)]
 pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
-    let cos_theta: f64 = dot(&((-1.0)*(*uv)), n)    ;
-    let r_out_parallel: Vec3 = etai_over_etat * ((*uv) + cos_theta*(*n));
-    let r_out_perp: Vec3 = -(1.0-r_out_parallel.l2_squared()).sqrt()*(*n);
-    return r_out_perp+r_out_parallel;
+    let cos_theta: f64 = dot(&((-1.0) * (*uv)), n);
+    let r_out_parallel: Vec3 = etai_over_etat * ((*uv) + cos_theta * (*n));
+    let r_out_perp: Vec3 = -(1.0 - r_out_parallel.l2_squared()).sqrt() * (*n);
+    return r_out_perp + r_out_parallel;
 }
 
 pub type Color = Vec3;
@@ -166,9 +169,9 @@ impl std::fmt::Display for Color {
         g = (g * scale).sqrt();
         b = (b * scale).sqrt();
 
-        let ir: u8 = ((256.0 * clamp(r, 0.0, 0.999)).floor()) as u8;
-        let ig: u8 = ((256.0 * clamp(g, 0.0, 0.999)).floor()) as u8;
-        let ib: u8 = ((256.0 * clamp(b, 0.0, 0.999)).floor()) as u8;
+        let ir: u8 = ((256.0 * utilities::clamp(r, 0.0, 0.999)).floor()) as u8;
+        let ig: u8 = ((256.0 * utilities::clamp(g, 0.0, 0.999)).floor()) as u8;
+        let ib: u8 = ((256.0 * utilities::clamp(b, 0.0, 0.999)).floor()) as u8;
         write!(f, "{} {} {}\n", ir, ig, ib)
     }
 }
