@@ -118,6 +118,19 @@ pub fn random_in_unit_sphere() -> Vec3 {
 }
 
 #[allow(dead_code)]
+pub fn random_in_unit_disk() -> Point3 {
+    loop {
+        let mut rng = rand::thread_rng();
+        let p: Point3 = Point3::new(rng.gen_range(-1.0, 1.0), rng.gen_range(-1.0, 1.0), 0.0);
+        if p.l2_squared() >= 1.0 {
+            continue
+        }
+        
+        return p
+    }    
+}
+
+#[allow(dead_code)]
 pub fn random_unit_vector() -> Vec3 {
     let mut rng = rand::thread_rng();
     let a: f64 = rng.gen_range(0.0, 2.0*std::f64::consts::PI);
@@ -129,6 +142,14 @@ pub fn random_unit_vector() -> Vec3 {
 #[allow(dead_code)]
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     return (*v)-2.0*dot(v, n)*(*n)
+}
+
+#[allow(dead_code)]
+pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let cos_theta: f64 = dot(&((-1.0)*(*uv)), n)    ;
+    let r_out_parallel: Vec3 = etai_over_etat * ((*uv) + cos_theta*(*n));
+    let r_out_perp: Vec3 = -(1.0-r_out_parallel.l2_squared()).sqrt()*(*n);
+    return r_out_perp+r_out_parallel;
 }
 
 pub type Color = Vec3;
